@@ -6,7 +6,23 @@
 #include <time.h>
 #include <unistd.h>
 #include <math.h>
+#include <stdbool.h>
+#include "sha256.h"
+
 /// Logic Functions
+#define MAX_USERS 100
+#define MAX_USERNAME_LENGTH 50
+#define HASH_LENGTH 64 // SHA-256 produces 64-character hash
+
+struct User
+{
+    char username[MAX_USERNAME_LENGTH];
+    char passwordHash[HASH_LENGTH + 1]; // +1 for null terminator
+};
+
+void signUp(struct User users[], int *numUsers);
+bool login(struct User users[], int numUsers);
+void hashPassword(const char *password, char *hash);
 
 /// Update & Insert Function
 void insertfirst(int data, char foodname[25], int quantity, float price);
@@ -62,8 +78,8 @@ int main()
     // loadingbar();
     Circularloadingbar();
     cls();
-    pwellcome();
-    // newWelcome();
+    // pwellcome();
+    newWelcome();
     Sleep(300);
     cls();
 
@@ -89,6 +105,14 @@ int main()
     insertend(7, "Grill    ", 7, 100);
     insertend(8, "Pancakes ", 121, 350.00);
     insertend(9, "Cold Drinks", 73, 120.00);
+
+userlogin:
+    br(1);
+    userloginfun();
+    br(1);
+    pre(4);
+    cls();
+    fflush(stdin);
 
 mainmenu:
     br(1);
@@ -1269,8 +1293,8 @@ void pwellcome()
     ccolor(40);
 
     char welcome[50] = "WELCOME";
-    char welcome2[50] = " TO";
-    char welcome3[50] = " FOOD ORDER";
+    char welcome2[50] = " TO ";
+    char welcome3[50] = " FLAVORDASH: ";
     char welcome4[50] = " MANAGEMENT SYSTEM";
     printf("\n\n\n\n\n\t\t\t");
     for (int wlc = 0; wlc < strlen(welcome); wlc++)
@@ -1322,6 +1346,76 @@ void pwellcome()
         {
             ccolor(11);
 
+            printf(" %c", welcome4[wlc3]);
+        }
+        Sleep(200);
+    }
+    ccolor(40);
+}
+
+void newWelcome()
+{
+    ccolor(40);
+
+    char welcome[] = "WELCOME";
+    char welcome2[] = " TO ";
+    char welcome3[] = " FLAVORDASH: ";
+    char welcome4[] = " MANAGEMENT SYSTEM";
+
+    printf("\n\n\n\n\n\t\t\t");
+
+    // Print 'WELCOME' with color transition
+    for (int wlc = 0; wlc < strlen(welcome); wlc++)
+    {
+        ccolor(120 + (wlc * 9));
+        printf(" %c", welcome[wlc]);
+        Sleep(200);
+    }
+
+    ccolor(40);
+    printf("\n\n\t\t\t\t ");
+
+    // Print 'TO' with color transition
+    for (int wlc2 = 0; wlc2 < strlen(welcome2); wlc2++)
+    {
+        ccolor(160 + (wlc2 * 9));
+        printf(" %c", welcome2[wlc2]);
+        Sleep(200);
+    }
+
+    ccolor(40);
+    printf("\n\n\n\t\t\t ");
+
+    // Print 'FLAVORDASH: ' with color transition for 'D'
+    for (int wlc3 = 0; wlc3 < strlen(welcome3); wlc3++)
+    {
+        if (welcome3[wlc3] != 'D')
+        {
+            ccolor(121 + (wlc3 * 4));
+            printf(" %c", welcome3[wlc3]);
+        }
+        else
+        {
+            ccolor(11);
+            printf(" %c", welcome3[wlc3]);
+        }
+        Sleep(200);
+    }
+
+    ccolor(40);
+    printf("\n\n\n\t\t\t\t ");
+
+    // Print 'MANAGEMENT SYSTEM' with color transition for 'A' and 'E'
+    for (int wlc3 = 0; wlc3 < strlen(welcome4); wlc3++)
+    {
+        if (welcome4[wlc3] != 'A' && welcome4[wlc3] != 'E')
+        {
+            ccolor(121 + (wlc3 * 4));
+            printf(" %c", welcome4[wlc3]);
+        }
+        else
+        {
+            ccolor(11);
             printf(" %c", welcome4[wlc3]);
         }
         Sleep(200);
@@ -1449,3 +1543,171 @@ void middtab1(void)
 {
     printf("\t\t\t\t\t");
 }
+
+void userloginfun()
+{
+    struct User users[MAX_USERS];
+    int numUsers = 0;
+    char choice;
+
+    // Load existing user data from file
+    FILE *file = fopen("userdata.txt", "r");
+    if (file != NULL)
+    {
+        while (fscanf(file, "%s %s", users[numUsers].username, users[numUsers].passwordHash) != EOF)
+        {
+            numUsers++;
+        }
+        fclose(file);
+    }
+
+    do
+    {
+        printf("\n1. Sign Up\n2. Login\n3. Continue...\n");
+        printf("Enter your choice: ");
+        scanf(" %c", &choice);
+
+        switch (choice)
+        {
+        case '1':
+            signUp(users, &numUsers);
+            break;
+        case '2':
+            if (login(users, numUsers))
+            {
+                printf("Login successful!\n");
+            }
+            else
+            {
+                printf("Login failed. Invalid username or password.\n");
+            }
+            break;
+        case '3':
+
+            break;
+        default:
+            printf("Invalid choice. Please try again.\n");
+        }
+    } while (choice != '3');
+
+    // Save user data to file before exiting
+    file = fopen("userdata.txt", "a");
+    if (file != NULL)
+    {
+        for (int i = 0; i < numUsers; i++)
+        {
+            fprintf(file, "%s %s\n", users[i].username, users[i].passwordHash);
+        }
+        fclose(file);
+    }
+}
+
+void signUp(struct User users[], int *numUsers)
+{
+    if (*numUsers >= MAX_USERS)
+    {
+        printf("Maximum number of users reached.\n");
+        return;
+    }
+
+    char username[MAX_USERNAME_LENGTH];
+    printf("Enter username: ");
+    scanf("%s", username);
+
+    // Check if username already exists
+    for (int i = 0; i < *numUsers; i++)
+    {
+        if (strcmp(users[i].username, username) == 0)
+        {
+            printf("Username already exists. Please choose a different username.\n");
+            return;
+        }
+    }
+
+    strcpy(users[*numUsers].username, username);
+
+    char password[MAX_USERNAME_LENGTH];
+    printf("Enter password: ");
+
+    int p = 0;
+    do
+    {
+        password[p] = getch();
+        if (password[p] != '\r')
+        {
+            printf("*");
+        }
+        p++;
+    } while (password[p - 1] != '\r');
+    password[p - 1] = '\0';
+
+    hashPassword(password, users[*numUsers].passwordHash);
+
+    (*numUsers)++;
+    printf("\nSign up successful!\n");
+}
+
+bool login(struct User users[], int numUsers)
+{
+    char username[MAX_USERNAME_LENGTH];
+    printf("Enter username: ");
+    scanf("%s", username);
+
+    // Check if username exists
+    bool userExists = false;
+    for (int i = 0; i < numUsers; i++)
+    {
+        if (strcmp(users[i].username, username) == 0)
+        {
+            userExists = true;
+            break;
+        }
+    }
+
+    if (!userExists)
+    {
+        printf("User does not exist. Please sign up first.\n");
+        return false;
+    }
+
+    char key[MAX_USERNAME_LENGTH];
+    printf("Enter password: ");
+    // scanf("%s", password);
+
+    int pa = 0;
+
+    do
+    {
+        key[pa] = getch();
+        if (key[pa] != '\r')
+        {
+            printf("*");
+        }
+        pa++;
+    } while (key[pa - 1] != '\r');
+    key[pa - 1] = '\0';
+
+    char hash[HASH_LENGTH + 1];
+    hashPassword(key, hash);
+
+    for (int i = 0; i < numUsers; i++)
+    {
+        if (strcmp(users[i].username, username) == 0 && strcmp(users[i].passwordHash, hash) == 0)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void hashPassword(const char *password, char *hash)
+{
+    SHA256_CTX ctx;
+    sha256_init(&ctx);
+    sha256_update(&ctx, (const uint8_t *)password, strlen(password));
+    sha256_final(&ctx, (uint8_t *)hash);
+    hash[HASH_LENGTH] = '\0'; // Null terminator
+}
+
+//  gcc main.c sha256.c -o main
+// ./main
