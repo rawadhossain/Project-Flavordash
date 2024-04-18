@@ -5,6 +5,7 @@
 #include <windows.h>
 #include <time.h>
 #include <unistd.h>
+#include <math.h>
 /// Logic Functions
 
 /// Update & Insert Function
@@ -67,6 +68,7 @@ int main()
     cls();
 
     int c = 0;
+    int v = 0;
     int any;
     int cardno[100];
     float cardmoney[100];
@@ -223,7 +225,7 @@ mainmenu:
                             pre(4);
                             printf("------------------------------\n");
                             pre(4);
-                            Sleep(150);
+                            Sleep(450);
                         }
                         Sleep(1500);
                     }
@@ -611,6 +613,9 @@ mainmenu:
             br(2);
             pre(4);
             printf(" 2. Credit ");
+            br(2);
+            pre(4);
+            printf(" 3. IUT Wallet ");
             int payment;
         payment:
 
@@ -637,7 +642,7 @@ mainmenu:
                     printf("Discount amount : %.2f  \n", discount * temp->price * fcquantity);
                     totalmoney -= discount * temp->price * fcquantity;
                     pre(4);
-                    printf("\Total money : %.2f \n\n", totalmoney);
+                    printf("Total money : %.2f \n\n", totalmoney);
 
                     order++;
                     total_order[order] = get_food_choice;
@@ -798,6 +803,88 @@ mainmenu:
                 }
             }
 
+            // IUT Wallet
+            else if (payment == 3)
+            {
+
+                int iut_card[100];
+
+                c++;
+
+                cls();
+                middle1();
+                pre(4);
+                printf("Enter Your ID : ");
+
+                fflush(stdin);
+                scanf("%d", &iut_card[c]);
+
+                cardno[c] = iut_card[c];
+
+                br(2);
+                pre(2);
+                // printf("Enter Your Card Pin   : ");
+
+                fflush(stdin);
+                // // scanf("%d",&pin);
+                // int p = 0;
+                // char pin[20];
+                // do
+                // {
+                //     pin[p] = getch();
+                //     if (pin[p] != '\r')
+                //     {
+                //         printf("*");
+                //     }
+                //     p++;
+                // } while (pin[p - 1] != '\r');
+                // pin[p - 1] = '\0';
+                // // printf("\nYou have entered %s as pin",pin);
+                // getch();
+
+                cardmoney[c] = temp->price * fcquantity;
+
+                totalmoney += temp->price * fcquantity;
+                order++;
+                total_order[order] = get_food_choice;
+                order_quantity[order] = fcquantity;
+
+                uquantity = temp->quantity - fcquantity;
+
+                updatefood(get_food_choice, uquantity);
+                loadingbar();
+
+                br(2);
+                pre(4);
+                printf("Payment Success...");
+                br(2);
+                pre(4);
+                printf("1. Do you want to place another order ? ");
+                br(2);
+                pre(4);
+                printf("2. Main Menu ");
+                int ps_menu3;
+            psmenu3:
+
+                scanf("%d", &ps_menu3);
+
+                if (ps_menu3 == 1)
+                {
+                    goto foodlist;
+                }
+                else if (ps_menu3 == 2)
+                {
+                    goto mainmenu;
+                }
+                else
+                {
+                    br(2);
+                    pre(4);
+                    printf("Please Choice from list : ");
+                    goto psmenu3;
+                }
+            }
+
             else
             {
 
@@ -870,6 +957,7 @@ void pre(int tab)
         printf("\t");
     }
 }
+
 void span(int space)
 {
 
@@ -1169,7 +1257,6 @@ void order_view(int order, int quantity, int or_no)
 
 void ccolor(int clr)
 {
-
     HANDLE hConsole;
     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleTextAttribute(hConsole, clr);
@@ -1240,11 +1327,6 @@ void pwellcome()
         Sleep(200);
     }
     ccolor(40);
-}
-
-void ccolor(int f)
-{
-    printf("\033[%d;m", f);
 }
 
 void loadingbar(void)
