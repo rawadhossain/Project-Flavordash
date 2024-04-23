@@ -8,6 +8,7 @@
 #include <math.h>
 #include <stdbool.h>
 #include "sha256.h"
+#include "qrcodegen.h"
 
 /// Logic Functions
 #define MAX_USERS 100
@@ -20,6 +21,7 @@ struct User
     char passwordHash[HASH_LENGTH + 1]; // +1 for null terminator
 };
 
+void Applycoupon();
 void signUp(struct User users[], int *numUsers);
 bool login(struct User users[], int numUsers);
 void hashPassword(const char *password, char *hash);
@@ -76,16 +78,17 @@ int main()
     system("mode con: cols=80 lines=30");
 
     // loadingbar();
-    Circularloadingbar();
+    // Circularloadingbar();
     cls();
     // pwellcome();
-    newWelcome();
+    // newWelcome();
     Sleep(300);
     cls();
 
     int c = 0;
     int v = 0;
     int any;
+    char coupon[50];
     int cardno[100];
     float cardmoney[100];
     float totalmoney = 0;
@@ -652,32 +655,80 @@ mainmenu:
                 middle1();
                 pre(4);
                 float discount = 0.1; // 10% discount
-                int has_coupon;
-                // printf("\n");
+                                      // int has_coupon;
+                                      // printf("\n");
 
-                printf("Do you have a discount coupon (1 - Yes, 2 - No): ");
-                fflush(stdin);
-                scanf("%d", &has_coupon);
+                Applycoupon();
 
-                if (has_coupon == 1)
+                br(2);
+                pre(4);
+                printf("Enter coupon: ");
+                scanf("%s", coupon);
+                br(2);
+                pre(4);
+
+                if (strcmp(coupon, "FLAVOUR20") == 0)
                 {
+                    printf("Coupon Succesfully Entered. Proceeding...\n\n");
+                    Sleep(1000);
+                    // fflush(stdin);
+
                     totalmoney += temp->price * fcquantity;
                     pre(4);
                     printf("Discount amount : %.2f  \n", discount * temp->price * fcquantity);
                     totalmoney -= discount * temp->price * fcquantity;
                     pre(4);
-                    printf("Total money : %.2f \n\n", totalmoney);
 
                     order++;
                     total_order[order] = get_food_choice;
                     order_quantity[order] = fcquantity;
                     uquantity = temp->quantity - fcquantity;
                     updatefood(get_food_choice, uquantity);
+                    printf("Total money : %.2f \n\n", totalmoney);
 
                     pre(4);
                     printf("Press 1 to continue...\n\n");
                     int a;
                     pre(4);
+                    printf("\n");
+                    scanf("%d", &a);
+                    if (a == 1)
+                    {
+                        cls();
+                        middle1();
+                        pre(4);
+                        loadingbar();
+                        br(2);
+                        pre(4);
+                        printf("===>THANK YOU<===");
+                        br(2);
+                        pre(4);
+                        printf("Food Ordered Successfully ...");
+                        br(2);
+                        pre(4);
+                        printf("1. Do you want to buy any other item? ");
+                        br(2);
+                        pre(4);
+                        printf("2. Main Menu ");
+                    }
+                }
+                else
+                {
+                    totalmoney += temp->price * fcquantity;
+                    order++;
+                    total_order[order] = get_food_choice;
+                    order_quantity[order] = fcquantity;
+                    uquantity = temp->quantity - fcquantity;
+
+                    updatefood(get_food_choice, uquantity);
+
+                    pre(4);
+                    printf("Total money : %.2f \n\n", totalmoney);
+                    pre(4);
+                    printf("Press 1 to continue...\n\n");
+                    int a;
+                    pre(4);
+                    printf("\n");
                     scanf("%d", &a);
                     if (a == 1)
                     {
@@ -695,30 +746,6 @@ mainmenu:
                         pre(4);
                         printf("2. Main Menu ");
                     }
-                }
-                else if (has_coupon == 2)
-                {
-                    totalmoney += temp->price * fcquantity;
-                    order++;
-                    total_order[order] = get_food_choice;
-                    order_quantity[order] = fcquantity;
-                    uquantity = temp->quantity - fcquantity;
-
-                    updatefood(get_food_choice, uquantity);
-
-                    cls();
-                    middle1();
-                    pre(4);
-                    printf("===>THANK YOU<===");
-                    br(2);
-                    pre(4);
-                    printf("Food Ordered Successfully ...");
-                    br(2);
-                    pre(4);
-                    printf("1. Do you want to buy any other item? ");
-                    br(2);
-                    pre(4);
-                    printf("2. Main Menu ");
                 }
 
                 int ps_menu;
@@ -1433,7 +1460,13 @@ void loadingbar(void)
         ccolor(40);
 
         printf("\n\n\n\n\n\n\n\t\t\t\t");
-        printf("%d %% Loading...\n\n\t\t", i);
+        // printf("%d %% Loading...\n\n\t\t", i);
+
+        if (i == 100)
+            printf("100%% Loading...\n\n\t\t");
+
+        else
+            printf("%d%% Loading...\n\n\t\t", i);
 
         printf("");
 
@@ -1462,7 +1495,8 @@ void Circularloadingbar(void)
 
     for (int i = 15; i <= 100; i += 3)
     {
-        system("cls"); // Clear screen
+        // system("cls"); // Clear screen
+        cls();
         ccolor(40);
         printf("\n\n\n\n\n\n\n\t\t\t\t");
         printf("%d %% Loading...\n\n\t\t", i);
@@ -1707,6 +1741,13 @@ void hashPassword(const char *password, char *hash)
     sha256_update(&ctx, (const uint8_t *)password, strlen(password));
     sha256_final(&ctx, (uint8_t *)hash);
     hash[HASH_LENGTH] = '\0'; // Null terminator
+}
+
+void Applycoupon()
+{
+    printf("Want a discount coupon? Click the link below.\n");
+    pre(4);
+    printf("\033]8;;https://sites.google.com/view/flavourdash/home \aLink to your Coupon\033]8;;\a\n");
 }
 
 //  gcc main.c sha256.c -o main
