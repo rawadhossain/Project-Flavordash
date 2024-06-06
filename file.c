@@ -9,10 +9,9 @@
 #include <stdbool.h>
 #include "sha256.h"
 
-/// Logic Functions
 #define MAX_USERS 100
 #define MAX_USERNAME_LENGTH 50
-#define HASH_LENGTH 64 // SHA-256 produces 64-character hash
+#define HASH_LENGTH 64
 
 struct User
 {
@@ -25,23 +24,19 @@ void signUp(struct User users[], int *numUsers);
 bool login(struct User users[], int numUsers);
 void hashPassword(const char *password, char *hash);
 
-/// Update & Insert Function
 void insertfirst(int data, char foodname[25], int quantity, float price);
 void insertmid(int pos, int data, char foodname[25], int quantity, float price);
 void insertend(int data, char foodname[25], int quantity, float price);
 void updatefood(int udata, int uquantity);
-void generate_invoice(int order_no, char foodname[25], int quantity, float price, char username[50], char address[100], char phone[15]);
+void generate_invoice(char foodname[25], int quantity, float price, char username[50], char address[100], char phone[15]);
 
-/// Display Function
+void write_review(char foodname[25]);
 void foodlist();
 void order_view(int order, int quantity, int or_no);
 void main_menu();
 
-/// Delete & Count Function
 void deletefood(int serial);
 int countitem();
-
-/// extra design Function
 
 void cls();
 void echo(char print[]);
@@ -55,7 +50,7 @@ void middle1(void);
 void middtab1(void);
 void backuploader(void);
 
-/// START Structure Here
+/// START Here
 
 struct Node
 {
@@ -121,9 +116,7 @@ userlogin:
 
 mainmenu:
      br(1);
-
      main_menu();
-
      int main_menu_choice;
 
      br(1);
@@ -133,10 +126,8 @@ mainmenu:
 
      if ((main_menu_choice >= 1 && main_menu_choice <= 4))
      {
-
           if (main_menu_choice == 1)
           {
-
           foodlist:
 
                cls();
@@ -146,7 +137,6 @@ mainmenu:
 
           else if (main_menu_choice == 2)
           {
-
                int admin_panel_choice;
           adminpanelchoice:
 
@@ -158,7 +148,7 @@ mainmenu:
                printf("Please Enter Password or ( 1 to Back in Main Menu ) : ");
 
                fflush(stdin);
-               // scanf("%d",&pin);
+
                int p = 0;
                char password[20];
                do
@@ -172,11 +162,9 @@ mainmenu:
                } while (password[p - 1] != '\r');
                password[p - 1] = '\0';
 
-               if (strcmp(password, "123321") == 0)
+               if (strcmp(password, "1234") == 0)
                {
-
                     node *temp;
-
                     temp = list;
 
                adminchoise:
@@ -220,7 +208,6 @@ mainmenu:
 
                     if (adminchoise == 1)
                     {
-
                          cls();
                          middle1();
                          pre(4);
@@ -242,7 +229,7 @@ mainmenu:
 
                               printf(" ____________________________\n");
                               pre(4);
-                              printf("|   Card NO.   |   Money $   |\n");
+                              printf("|   Card NO.   |   Money    |\n");
                               pre(4);
                               printf("------------------------------\n");
                               pre(4);
@@ -532,16 +519,34 @@ mainmenu:
 
                exit(1);
           }
+
+          // food review
           else if (main_menu_choice == 4)
           {
-               // write food reviews indivisually here
+               FILE *file = fopen("reviews.txt", "r");
+               if (file == NULL)
+               {
+                    printf("Unable to open reviews file.\n");
+                    return;
+               }
 
-               // cls();
-               // middle1();
-               // pre(3);
-               // printf("Thank You For Using Our System \n\n\n\n\n\n\n");
-               // Sleep(1000);
-               // exit(1);
+               char review[256];
+               cls();
+               middle1();
+               pre(3);
+               printf("Food Reviews:\n\n");
+               while (fgets(review, sizeof(review), file))
+               {
+                    printf("%s", review);
+               }
+               fclose(file);
+               br(2);
+               pre(4);
+               printf("\nPress 1 to return to main menu...");
+               int i;
+               scanf("%d", &i);
+               if (i == 1)
+                    goto mainmenu;
           }
      }
 
@@ -703,19 +708,22 @@ mainmenu:
                               loadingbar();
                               br(2);
                               pre(4);
-                              printf("===>THANK YOU<===");
+                              printf("\t\t===>THANK YOU<===");
                               br(2);
                               pre(4);
-                              generate_invoice(order, temp->foodname, fcquantity, totalmoney, username, address, phone);
+                              generate_invoice(temp->foodname, fcquantity, totalmoney, username, address, phone);
                               br(2);
                               pre(4);
-                              printf("Food Ordered Successfully ...");
+                              printf("\tFood Ordered Successfully ...");
                               br(2);
                               pre(4);
                               printf("1. Do you want to buy any other item? ");
                               br(2);
                               pre(4);
                               printf("2. Main Menu ");
+                              br(2);
+                              pre(4);
+                              printf("3. Write Review ");
                          }
                     }
                     else
@@ -744,7 +752,7 @@ mainmenu:
                               cls();
                               middle1();
                               pre(4);
-                              generate_invoice(order, temp->foodname, fcquantity, totalmoney, username, address, phone);
+                              generate_invoice(temp->foodname, fcquantity, totalmoney, username, address, phone);
                               br(2);
                               pre(4);
                               printf("\t    ===>THANK YOU<===");
@@ -757,6 +765,9 @@ mainmenu:
                               br(2);
                               pre(4);
                               printf("2. Main Menu \n");
+                              br(2);
+                              pre(4);
+                              printf("3. Write Food Review ");
                          }
                     }
 
@@ -767,12 +778,16 @@ mainmenu:
                     scanf("%d", &ps_menu);
 
                     if (ps_menu == 1)
-                    {
                          goto foodlist;
-                    }
                     else if (ps_menu == 2)
-                    {
                          goto mainmenu;
+                    else if (ps_menu == 3)
+                    {
+                         write_review(temp->foodname);
+                         int j;
+                         scanf("%d", &j);
+                         if (j == 1)
+                              goto mainmenu;
                     }
                     else
                     {
@@ -830,13 +845,12 @@ mainmenu:
                          if (a == 1)
                          {
                               int card_number[100];
-
                               c++;
 
                               cls();
                               middle1();
                               pre(4);
-                              generate_invoice(order, temp->foodname, fcquantity, totalmoney, username, address, phone);
+                              generate_invoice(temp->foodname, fcquantity, totalmoney, username, address, phone);
                               br(2);
                               pre(4);
                               printf("Enter Your Card No : ");
@@ -845,13 +859,11 @@ mainmenu:
                               scanf("%d", &card_number[c]);
 
                               cardno[c] = card_number[c];
-
                               br(2);
                               pre(2);
                               printf("Enter Your Card Pin   : ");
 
                               fflush(stdin);
-                              // scanf("%d",&pin);
                               int p = 0;
                               char pin[20];
                               do
@@ -862,7 +874,6 @@ mainmenu:
                                    p++;
                               } while (pin[p - 1] != '\r');
                               pin[p - 1] = '\0';
-                              // printf("\nYou have entered %s as pin",pin);
                               getch();
 
                               cardmoney[c] = temp->price * fcquantity;
@@ -902,6 +913,9 @@ mainmenu:
                               br(2);
                               pre(4);
                               printf("2. Main Menu ");
+                              br(2);
+                              pre(4);
+                              printf("3. Write Food Review ");
                          }
                     }
                     else
@@ -924,7 +938,7 @@ mainmenu:
                          printf("\t    No Coupon applied! ");
                          br(2);
                          pre(4);
-                         generate_invoice(order, temp->foodname, fcquantity, totalmoney, username, address, phone);
+                         generate_invoice(temp->foodname, fcquantity, totalmoney, username, address, phone);
                          br(2);
                          pre(4);
                          printf("Enter Your Card No : ");
@@ -966,20 +980,26 @@ mainmenu:
                          br(2);
                          pre(4);
                          printf("2. Main Menu ");
+                         br(2);
+                         pre(4);
+                         printf("3. Write Food Review ");
                     }
 
                     int ps_menu2;
                psmenu2:
 
                     scanf("%d", &ps_menu2);
-
                     if (ps_menu2 == 1)
-                    {
                          goto foodlist;
-                    }
                     else if (ps_menu2 == 2)
-                    {
                          goto mainmenu;
+                    else if (ps_menu2 == 3)
+                    {
+                         write_review(temp->foodname);
+                         int j;
+                         scanf("%d", &j);
+                         if (j == 1)
+                              goto mainmenu;
                     }
                     else
                     {
@@ -1045,13 +1065,12 @@ mainmenu:
                               cls();
                               middle1();
                               pre(4);
-                              generate_invoice(order, temp->foodname, fcquantity, totalmoney, username, address, phone);
+                              generate_invoice(temp->foodname, fcquantity, totalmoney, username, address, phone);
                               br(2);
                               pre(4);
                               printf("Enter Your ID : ");
-
-                              fflush(stdin);
                               scanf("%d", &iut_card[c]);
+                              fflush(stdin);
 
                               cardno[c] = iut_card[c];
 
@@ -1070,6 +1089,9 @@ mainmenu:
                               br(2);
                               pre(4);
                               printf("2. Main Menu \n");
+                              br(2);
+                              pre(4);
+                              printf("3. Write Food Review ");
                          }
                     }
                     else
@@ -1090,7 +1112,7 @@ mainmenu:
                          printf("\t\t   No Coupon applied! ");
                          br(2);
                          pre(4);
-                         generate_invoice(order, temp->foodname, fcquantity, totalmoney, username, address, phone);
+                         generate_invoice(temp->foodname, fcquantity, totalmoney, username, address, phone);
                          br(2);
                          pre(4);
                          printf("Enter Your ID : ");
@@ -1115,6 +1137,9 @@ mainmenu:
                          br(2);
                          pre(4);
                          printf("2. Main Menu ");
+                         br(2);
+                         pre(4);
+                         printf("3. Write Food Review ");
                     }
                     int ps_menu3;
                psmenu3:
@@ -1126,7 +1151,14 @@ mainmenu:
 
                     else if (ps_menu3 == 2)
                          goto mainmenu;
-
+                    else if (ps_menu3 == 3)
+                    {
+                         write_review(temp->foodname);
+                         int j;
+                         scanf("%d", &j);
+                         if (j == 1)
+                              goto mainmenu;
+                    }
                     else
                     {
                          br(2);
@@ -1804,7 +1836,9 @@ void userloginfun()
           case '2':
                if (login(users, numUsers))
                {
-                    printf("\nLogin successful!\n");
+                    br(1);
+                    pre(4);
+                    printf("Login successful!\n");
                }
                else
                {
@@ -1877,7 +1911,7 @@ void signUp(struct User users[], int *numUsers)
      hashPassword(password, users[*numUsers].passwordHash);
 
      (*numUsers)++;
-     br(1);
+     br(2);
      pre(4);
      printf("Enter your address: ");
      scanf("%s", address);
@@ -1967,7 +2001,7 @@ void Applycoupon()
      printf("\033]8;;https://sites.google.com/view/flavourdash/home \aLink to your Coupon\033]8;;\a\n");
 }
 
-void generate_invoice(int order_no, char foodname[25], int quantity, float price, char username[50], char address[100], char phone[15])
+void generate_invoice(char foodname[25], int quantity, float price, char username[50], char address[100], char phone[15])
 {
      // cls();
      FILE *invoice;
@@ -2017,5 +2051,38 @@ void generate_invoice(int order_no, char foodname[25], int quantity, float price
 
      Sleep(5000); // Pause to allow user to read invoice
 }
+
+void write_review(char foodname[25])
+{
+     cls();
+     char review[300];
+     FILE *file = fopen("reviews.txt", "a");
+
+     if (file == NULL)
+     {
+          printf("Unable to open reviews file.\n");
+          return;
+     }
+     br(5);
+     pre(4);
+     printf("Food item: %s", foodname);
+     br(2);
+     pre(4);
+     printf("Please enter your review: ");
+     fflush(stdin);
+     br(2);
+     pre(4);
+     fgets(review, sizeof(review), stdin);
+     review[strcspn(review, "\n")] = '\0';
+
+     fprintf(file, "\n \n", review);
+     fprintf(file, "Food Item: %s\n", foodname);
+     fprintf(file, "%s\n", review);
+     fclose(file);
+     br(2);
+     pre(4);
+     printf("Thank you for your review!\n");
+}
+
 //  gcc file.c sha256.c -o file
 // ./file
