@@ -96,15 +96,15 @@ int main()
      int citem;
 
      head = NULL;
-     insertfirst(5, "Burger   ", 23, 175.00);
-     insertend(6, "Pizza   ", 13, 250.00);
-     insertend(1, "Hot Cake ", 8, 475.00);
-     insertend(2, "Coffee   ", 46, 325.00);
-     insertend(3, "Ice cream", 46, 230.00);
-     insertend(4, "Sandwich ", 34, 320.00);
-     insertend(7, "Grill    ", 7, 100);
-     insertend(8, "Pancakes ", 121, 350.00);
-     insertend(9, "Cold Drinks", 73, 120.00);
+      insertfirst(5, "Burger      ", 23, 220.00);
+     insertend(6, "Pizza       ", 13, 350.00);
+     insertend(1, "CheeseCake  ", 18, 175.00);
+     insertend(2, "Coffee      ", 46, 325.00);
+     insertend(3, "Ice cream   ", 46, 230.00);
+     insertend(4, "Sandwich    ", 34, 320.00);
+     insertend(7, "Grill       ", 17, 100.00);
+     insertend(8, "Fries       ", 75, 350.00);
+     insertend(9, "Cold Drinks ", 73, 120.00);
 
 userlogin:
      br(1);
