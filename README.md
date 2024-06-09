@@ -2,15 +2,20 @@
 # Project: Flavordash
 
 
-
 ## Run the main file:
-🔸 Keep all the files in the same directory  
+ Keep all the files in the same directory  
+ Open "New Terminal" in VS in the project directory in VS Code 
+ Write the command:
+ 
+```
+gcc main.c sha256.c -o main
+```
 
-🔸 Open "New Terminal" in VS in the project directory in VS Code 
+Again insert command:
 
-🔸 Write the command: gcc main.c sha256.c -o main  
-
-🔸 Again insert command: ./main
+```
+./main
+```
 
 The program should start running now.
 
